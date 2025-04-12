@@ -9,16 +9,31 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "me.bluedragon.budgetbuddy"
     },
     "web": {
       "bundler": "metro",
       "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "fb082d04-1b0c-4398-8276-724d12fdf767"
+      }
+    },
+    "owner": "bluedragon42",
+    "android": {
+      "package": "me.bluedragon.budgetbuddy"
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, useColorScheme, ScrollView } from 'react-native';
 import { VictoryPie, VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
 import { useBudgetStore } from '@/store/useBudgetStore';
@@ -30,7 +30,7 @@ export default function StatisticsScreen() {
     const end = endOfMonth(now);
     const days = eachDayOfInterval({ start, end });
 
-    const dailyTotals = days.map((day) => {
+    const dailyTotals = days.map((day: Date) => {
       const dayTotal = budget.transactions
         .filter((t) => {
           const transactionDate = new Date(t.date);
