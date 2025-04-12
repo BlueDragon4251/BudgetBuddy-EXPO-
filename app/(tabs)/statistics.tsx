@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, useColorScheme, ScrollView } from 'react-native';
 import { VictoryPie, VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
-import { useBudgetStore } from '@/store/useBudgetStore';
+import { useBudgetStore } from '../../store/useBudgetStore';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { de } from 'date-fns/locale';
 
@@ -12,8 +12,8 @@ export default function StatisticsScreen() {
 
   const categoryData = useMemo(() => {
     const expensesByCategory = budget.transactions
-      .filter((t) => t.type === 'expense')
-      .reduce((acc, transaction) => {
+      .filter((t: { type: string }) => t.type === 'expense')
+      .reduce((acc: Record<string, number>, transaction: { category: string; amount: number }) => {
         acc[transaction.category] = (acc[transaction.category] || 0) + transaction.amount;
         return acc;
       }, {} as Record<string, number>);
@@ -32,14 +32,14 @@ export default function StatisticsScreen() {
 
     const dailyTotals = days.map((day: Date) => {
       const dayTotal = budget.transactions
-        .filter((t) => {
+        .filter((t: { date: string }) => {
           const transactionDate = new Date(t.date);
           return (
             transactionDate.getDate() <= day.getDate() &&
             transactionDate.getMonth() === day.getMonth()
           );
         })
-        .reduce((acc, t) => {
+        .reduce((acc: number, t: { type: string; amount: number }) => {
           return t.type === 'income' ? acc + t.amount : acc - t.amount;
         }, 0);
 
@@ -105,28 +105,28 @@ export default function StatisticsScreen() {
           ]}>
           Monatlicher Verlauf
         </Text>
-        <VictoryChart height={350} padding={{ top: 50, bottom: 50, left: 50, right: 50 }}> // Make larger
-          <VictoryAxis
-            style={{
-              axis: { stroke: isDark ? '#ffffff' : '#000000' },
-              tickLabels: {
-                fill: isDark ? '#ffffff' : '#000000',
-                fontSize: 10,
-                fontFamily: 'Inter-Regular',
-              },
-            }}
-          />
-          <VictoryAxis
-            dependentAxis
-            style={{
-              axis: { stroke: isDark ? '#ffffff' : '#000000' },
-              tickLabels: {
-                fill: isDark ? '#ffffff' : '#000000',
-                fontSize: 10,
-                fontFamily: 'Inter-Regular',
-              },
-            }}
-          />
+        <VictoryChart height={400} padding={{ top: 80, bottom: 80, left: 80, right: 80 }}>
+<VictoryAxis
+  style={{
+    axis: { stroke: isDark ? '#ffffff' : '#000000' },
+    tickLabels: {
+      fill: isDark ? '#ffffff' : '#000000',
+      fontSize: 12,
+      fontFamily: 'Inter-Regular',
+    },
+  }}
+/>
+<VictoryAxis
+  dependentAxis
+  style={{
+    axis: { stroke: isDark ? '#ffffff' : '#000000' },
+    tickLabels: {
+      fill: isDark ? '#ffffff' : '#000000',
+      fontSize: 12,
+      fontFamily: 'Inter-Regular',
+    },
+  }}
+/>
           <VictoryLine
             data={dailyBalance}
             style={{

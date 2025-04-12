@@ -7,10 +7,8 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "me.bluedragon.budgetbuddy"
+      "supportsTablet": true
     },
     "web": {
       "bundler": "metro",
