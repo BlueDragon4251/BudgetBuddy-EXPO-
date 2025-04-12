@@ -77,6 +77,7 @@ export default function StatisticsScreen() {
           Ausgaben nach Kategorien
         </Text>
         <VictoryPie
+          accessibilityHint={undefined} // Add this line to potentially suppress the web warning
           data={categoryData}
           colorScale={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD']}
           width={300}
