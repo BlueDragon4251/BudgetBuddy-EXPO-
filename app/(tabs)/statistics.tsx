@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, useColorScheme, ScrollView, Platform } from 'react-native'; // Add Platform
-import { VictoryPie, VictoryChart, VictoryLine, VictoryAxis, VictoryContainer } from 'victory-native'; // Add VictoryContainer
+import { View, Text, StyleSheet, useColorScheme, ScrollView } from 'react-native';
+import { VictoryPie, VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
+import { Svg, Rect } from 'react-native-svg'; // Import Svg components
 import { useBudgetStore } from '@/store/useBudgetStore';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -62,6 +63,11 @@ export default function StatisticsScreen() {
         <Text style={[styles.title, { color: isDark ? '#ffffff' : '#000000' }]}>
           Statistiken
         </Text>
+        {/* Add a simple test SVG */}
+        <Text style={{ color: isDark ? '#fff' : '#000', marginLeft: 20 }}>SVG Test:</Text>
+        <Svg height="50" width="50" style={{ marginLeft: 20 }}>
+          <Rect x="0" y="0" width="50" height="50" fill="red" />
+        </Svg>
       </View>
 
       <View
@@ -90,11 +96,6 @@ export default function StatisticsScreen() {
               fontFamily: 'Inter-Regular',
             },
           }}
-          containerComponent={ // Add containerComponent
-            <VictoryContainer
-              {...(Platform.OS !== 'web' ? { accessibilityHint: 'Pie chart showing expenses by category' } : {})} // Conditionally apply hint
-            />
-          }
         />
       </View>
 
