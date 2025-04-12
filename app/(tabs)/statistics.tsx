@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, useColorScheme, ScrollView } from 'react-native';
-import { VictoryPie, VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
+import { View, Text, StyleSheet, useColorScheme, ScrollView, Platform } from 'react-native'; // Add Platform
+import { VictoryPie, VictoryChart, VictoryLine, VictoryAxis, VictoryContainer } from 'victory-native'; // Add VictoryContainer
 import { useBudgetStore } from '@/store/useBudgetStore';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -77,7 +77,6 @@ export default function StatisticsScreen() {
           Ausgaben nach Kategorien
         </Text>
         <VictoryPie
-          accessibilityHint={undefined} // Add this line to potentially suppress the web warning
           data={categoryData}
           colorScale={['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD']}
           width={300}
@@ -91,6 +90,11 @@ export default function StatisticsScreen() {
               fontFamily: 'Inter-Regular',
             },
           }}
+          containerComponent={ // Add containerComponent
+            <VictoryContainer
+              {...(Platform.OS !== 'web' ? { accessibilityHint: 'Pie chart showing expenses by category' } : {})} // Conditionally apply hint
+            />
+          }
         />
       </View>
 
