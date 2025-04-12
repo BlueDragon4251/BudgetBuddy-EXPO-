@@ -1,0 +1,46 @@
+{
+  "transactions": [
+    {
+      "type": "income",
+      "amount": 200,
+      "description": "Arbeit ",
+      "category": "Gehalt",
+      "date": "2025-04-12T13:21:06.701Z",
+      "isRecurring": true,
+      "recurringInterval": "monthly",
+      "id": "1744464066701"
+    },
+    {
+      "type": "expense",
+      "amount": 50,
+      "description": "Essen",
+      "category": "Lebensmittel",
+      "date": "2025-04-12T13:21:27.177Z",
+      "isRecurring": false,
+      "id": "1744464087177"
+    },
+    {
+      "type": "expense",
+      "amount": 40,
+      "description": "Sprit",
+      "category": "Transport",
+      "date": "2025-04-12T13:22:04.295Z",
+      "isRecurring": false,
+      "id": "1744464124295"
+    }
+  ],
+  "categories": {
+    "income": [
+      "Gehalt",
+      "Bonus",
+      "Sonstiges"
+    ],
+    "expense": [
+      "Miete",
+      "Lebensmittel",
+      "Transport",
+      "Unterhaltung",
+      "Sonstiges"
+    ]
+  }
+}

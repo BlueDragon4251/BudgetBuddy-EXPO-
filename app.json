@@ -3,8 +3,13 @@
     "name": "BudgetBuddy",
     "slug": "BudgetBuddy",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
+"splash": {
+  "image": "./assets/images/splash-icon.png",
+  "resizeMode": "contain",
+  "backgroundColor": "system"
+},
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "ios": {

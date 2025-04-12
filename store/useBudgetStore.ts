@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Budget, Transaction } from '@/types/budget';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import DocumentPicker from 'react-native-document-picker';
@@ -44,33 +44,33 @@ const resetBudgetIfNeeded = async (resetConfig: { carryOverRemaining: boolean; r
 
   if (today >= resetDate) {
     const budget = get().budget;
-const newIncome = budget.transactions
-  .filter((t: Transaction) => t.type === 'income' && new Date(t.date) >= resetDate)
-  .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+    const newIncome = budget.transactions
+      .filter((t: Transaction) => t.type === 'income' && new Date(t.date) >= resetDate)
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
 
-const oldBudget = budget.transactions
-  .filter((t: Transaction) => t.type === 'expense' && new Date(t.date) < resetDate)
-  .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+    const oldBudget = budget.transactions
+      .filter((t: Transaction) => t.type === 'expense' && new Date(t.date) < resetDate)
+      .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
 
-const updatedBudget = {
-  ...budget,
-  transactions: budget.transactions.filter((t: Transaction) => new Date(t.date) >= resetDate),
-};
+    const updatedBudget = {
+      ...budget,
+      transactions: budget.transactions.filter((t: Transaction) => new Date(t.date) >= resetDate),
+    };
 
-if (resetConfig.carryOverRemaining) {
-  updatedBudget.transactions.push({
-    id: Date.now().toString(),
-    type: 'income',
-    category: 'Sonstiges',
-    amount: oldBudget,
-    date: resetDate.toISOString(),
-    description: 'Carried over from previous budget',
-  } as Transaction);
-}
+    if (resetConfig.carryOverRemaining) {
+      updatedBudget.transactions.push({
+        id: Date.now().toString(),
+        type: 'income',
+        category: 'Sonstiges',
+        amount: oldBudget,
+        date: resetDate.toISOString(),
+        description: 'Carried over from previous budget',
+      } as Transaction);
+    }
 
-await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedBudget));
-set({ budget: updatedBudget });
-await get().createBackup();
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedBudget));
+    set({ budget: updatedBudget });
+    await get().createBackup();
   }
 };
 
@@ -112,19 +112,21 @@ export const useBudgetStore = create<BudgetStore>((set, get) => ({
     await get().createBackup();
   },
 
-loadBudget: async () => {
-  const resetConfig = { ...get().resetConfig, resetDay: 1 }; // Ensure resetDay is included
-  await resetBudgetIfNeeded(resetConfig, set, get);
+  loadBudget: async () => {
+    const resetConfig = { ...get().resetConfig, resetDay: 1 }; // Ensure resetDay is included
+    await resetBudgetIfNeeded(resetConfig, set, get);
 
     try {
       const storedData = await AsyncStorage.getItem(STORAGE_KEY);
       if (storedData) {
-        set({ budget: JSON.parse(storedData) });
+        const parsedData = JSON.parse(storedData);
+        set({ budget: parsedData });
       } else {
         set({ budget: initialBudget });
       }
     } catch (error) {
       console.error('Error loading budget:', error);
+      set({ budget: initialBudget }); // Fallback to initialBudget if error occurs
     } finally {
       set({ isLoading: false });
     }
@@ -150,57 +152,73 @@ loadBudget: async () => {
   },
 
   importBudget: async () => {
+    const validateBudget = (budget: any): budget is Budget => {
+      return (
+        budget &&
+        Array.isArray(budget.transactions) &&
+        typeof budget.categories === 'object' &&
+        Array.isArray(budget.categories.income) &&
+        Array.isArray(budget.categories.expense)
+      );
+    };
+
     try {
       if (Platform.OS === 'web') {
-        // Web implementation using file input
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'application/json';
-  
-        const promise = new Promise((resolve) => {
-          input.onchange = (e) => {
-            const target = e.target as HTMLInputElement;
-            resolve(target.files ? target.files[0] : null);
-          };
-        });
-  
+
+        input.onchange = async (e) => {
+          const target = e.target as HTMLInputElement;
+          const file = target.files ? target.files[0] : null;
+          if (file) {
+            const text = await file.text();
+            const importedBudget = JSON.parse(text);
+
+            if (validateBudget(importedBudget)) {
+              await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(importedBudget));
+              set({ budget: importedBudget });
+              Alert.alert('Success', 'Budget imported successfully.');
+            } else {
+              Alert.alert('Error', 'Invalid budget data.');
+            }
+          }
+        };
+
         input.click();
-        const file = await promise;
-  
-        if (file) {
-          const text = await (file as File).text();
-          const importedBudget = JSON.parse(text);
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(importedBudget));
-          set({ budget: importedBudget });
-        }
       } else {
-        // React Native Document Picker
         const results = await DocumentPicker.pick({
           type: [DocumentPicker.types.allFiles],
         });
-  
-        // Zugriff auf das erste Element im Array
+
         const result = results[0];
-  
-        // Stelle sicher, dass `uri` existiert
         if (result.uri) {
           const content = await FileSystem.readAsStringAsync(result.uri);
           const importedBudget = JSON.parse(content);
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(importedBudget));
-          set({ budget: importedBudget });
+
+          if (validateBudget(importedBudget)) {
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(importedBudget));
+            set({ budget: importedBudget });
+            Alert.alert('Success', 'Budget imported successfully.');
+          } else {
+            Alert.alert('Error', 'Invalid budget data.');
+          }
         } else {
-          console.error('No URI found in the selected file.');
+          Alert.alert('Error', 'No URI found in the selected file.');
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       if (DocumentPicker.isCancel(error)) {
-        console.log("Document picker was cancelled");
+        Alert.alert('Cancelled', 'Document picker was cancelled.');
       } else {
-        console.error('Error importing budget:', error);
+        if (error instanceof Error) {
+          Alert.alert('Error', 'Error importing budget: ' + error.message);
+        } else {
+          Alert.alert('Error', 'Unknown error occurred during import.');
+        }
       }
     }
   },
-  
 
   createBackup: async () => {
     if (Platform.OS === 'web') {
@@ -209,10 +227,7 @@ loadBudget: async () => {
 
     try {
       const backupPath = `${FileSystem.documentDirectory}${BACKUP_FILENAME}`;
-      await FileSystem.writeAsStringAsync(
-        backupPath,
-        JSON.stringify(get().budget, null, 2)
-      );
+      await FileSystem.writeAsStringAsync(backupPath, JSON.stringify(get().budget, null, 2));
     } catch (error) {
       console.error('Error creating backup:', error);
     }
